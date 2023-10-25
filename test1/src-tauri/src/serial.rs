@@ -57,8 +57,7 @@ impl Serial {
             // Write any data we received
             {
                 let recv_data = receiver.try_recv();
-                if !recv_data.is_err() {
-                    let data = recv_data.unwrap();
+                if let Ok(data) = recv_data {
                     serial.write(&data).expect("Unable to write to serial port");
                 }
             }

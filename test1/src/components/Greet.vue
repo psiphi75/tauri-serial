@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { invoke } from "@tauri-apps/api/tauri";
-import { listen } from '@tauri-apps/api/event'
+import { listen, emit } from '@tauri-apps/api/event'
 
 const listPortsMsg = ref("");
 const openPortMsg = ref("");
 const portName = ref("");
 const baud = ref("");
 const timeout = ref("");
+const writeData = ref("");
 
 async function listPorts() {
   listPortsMsg.value = await invoke("serial_list_ports");
@@ -15,6 +16,10 @@ async function listPorts() {
 
 async function openPort() {
   openPortMsg.value = await invoke("serial_open", { msg: { port: portName.value, baud: parseInt(baud.value), read_timout_ms: parseInt(timeout.value) } });
+}
+
+async function serialWriteData() {
+  emit('serial-write', writeData.value);
 }
 
 listen('serial-read', (event) => {
@@ -35,6 +40,10 @@ listen('serial-read', (event) => {
     <button type="submit">Open</button>
   </form>
 
+  <form class="row" @submit.prevent="serialWriteData">
+    <input id="listPorts-input" v-model="writeData" placeholder="..." />
+    <button type="submit">Write</button>
+  </form>
 
   <p>{{ listPortsMsg }}</p>
   <p>{{ openPortMsg }}</p>
