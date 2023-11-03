@@ -1,9 +1,10 @@
+use std::io::Write;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
 use serial2::{self, SerialPort};
 
-pub type Callback = Arc<Mutex<dyn FnMut(&[u8]) + Send + Sync>>;
+pub type Callback = Arc<Mutex<dyn FnMut(Vec<u8>) + Send + Sync>>;
 
 #[derive(Debug)]
 pub struct Serial {
@@ -48,11 +49,22 @@ impl Serial {
         let mut buf = [0; 1024];
         std::thread::spawn(move || loop {
             // Read data and send it back via the callback
-            let read = serial.read(&mut buf).expect("Unable to read from port");
-            if read > 0 {
-                let cb = &mut read_cb.lock().unwrap();
-                cb(&buf[0..read]);
-            }
+            match serial.read(&mut buf) {
+                Ok(0) => (),
+                Ok(n) => {
+                    std::io::stdout()
+                        .write_all(&buf[..n])
+                        .map_err(|e| eprintln!("Error: Failed to write to stdout: {}", e))
+                        .unwrap();
+                    let cb = &mut read_cb.lock().unwrap();
+                    cb(buf[..n].to_vec());
+                }
+                Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => (),
+                Err(e) => {
+                    eprintln!("Error: Failed to read from port: {:?}", e);
+                    break;
+                }
+            };
 
             // Write any data we received
             {

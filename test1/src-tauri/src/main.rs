@@ -31,7 +31,7 @@ fn serial_open(
     msg: OpenSerialMsg,
     state: tauri::State<'_, SerialComms>,
 ) -> String {
-    println!("serialopen");
+    println!("opening port: {}", msg.port);
     // Make sure the port exists
     if !Serial::list_ports().contains(&msg.port) {
         return String::from("Port not found");
@@ -45,7 +45,7 @@ fn serial_open(
     }
 
     // let window_handle = window.handle();
-    let cb = Arc::new(Mutex::new(move |data: &_| {
+    let cb = Arc::new(Mutex::new(move |data: Vec<u8>| {
         window.emit("serial-read", data).unwrap();
     }));
     let serial = Serial::open(&msg.port, msg.baud, msg.read_timout_ms as u64, cb);
