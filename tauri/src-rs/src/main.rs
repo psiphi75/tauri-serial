@@ -3,7 +3,7 @@
 
 use std::sync::{Arc, Mutex};
 use tauri::Manager;
-use test1::serial::Serial;
+use tauri_serial::serial::Serial;
 
 // the payload type must implement `Serialize` and `Clone`.
 #[derive(Clone, serde::Serialize)]
@@ -44,7 +44,6 @@ fn serial_open(
         return String::from("Port already open");
     }
 
-    // let window_handle = window.handle();
     let cb = Arc::new(Mutex::new(move |data: Vec<u8>| {
         window.emit("serial-read", data).unwrap();
     }));

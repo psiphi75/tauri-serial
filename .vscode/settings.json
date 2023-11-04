@@ -1,0 +1,7 @@
+{
+    "rust-analyzer.cargo.target": null,
+    "rust-analyzer.linkedProjects": [
+        "./tauri/src-rs/Cargo.toml"
+    ],
+    "rust-analyzer.check.targets": null
+}
