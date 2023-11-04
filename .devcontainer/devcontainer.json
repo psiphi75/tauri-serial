@@ -7,6 +7,9 @@
 		"dockerfile": "Dockerfile"
 	},
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+	"runArgs": [
+		"--device=/dev/ttyUSB0"
+	],
 	// Use 'mounts' to make the cargo cache persistent in a Docker Volume.
 	// "mounts": [
 	// 	{

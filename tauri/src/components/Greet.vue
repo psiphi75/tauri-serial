@@ -9,6 +9,7 @@ const portName = ref("");
 const baud = ref("");
 const timeout = ref("");
 const writeData = ref("");
+const readData = ref();
 
 async function listPorts() {
   listPortsMsg.value = await invoke("serial_list_ports");
@@ -24,6 +25,7 @@ async function serialWriteData() {
 
 listen('serial-read', (event) => {
   console.log(event);
+  readData.value = event.payload;
 })
 
 </script>
@@ -47,4 +49,5 @@ listen('serial-read', (event) => {
 
   <p>{{ listPortsMsg }}</p>
   <p>{{ openPortMsg }}</p>
+  <p>{{ readData }}</p>
 </template>
