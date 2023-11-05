@@ -52,10 +52,10 @@ impl Serial {
             match serial.read(&mut buf) {
                 Ok(0) => (),
                 Ok(n) => {
-                    std::io::stdout()
-                        .write_all(&buf[..n])
-                        .map_err(|e| eprintln!("Error: Failed to write to stdout: {}", e))
-                        .unwrap();
+                    // std::io::stdout()
+                    //     .write_all(&buf[..n])
+                    //     .map_err(|e| eprintln!("Error: Failed to write to stdout: {}", e))
+                    //     .unwrap();
                     let cb = &mut read_cb.lock().unwrap();
                     cb(buf[..n].to_vec());
                 }
