@@ -20,7 +20,7 @@ async function openPort() {
 }
 
 async function serialWriteData() {
-  emit('serial-write', writeData.value);
+  emit('serial-write', [72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100, 33]);
 }
 
 listen('serial-read', (event) => {
@@ -43,7 +43,7 @@ listen('serial-read', (event) => {
   </form>
 
   <form class="row" @submit.prevent="serialWriteData">
-    <input id="listPorts-input" v-model="writeData" placeholder="..." />
+    <!-- <input id="listPorts-input" v-model="writeData" placeholder="..." /> -->
     <button type="submit">Write</button>
   </form>
 

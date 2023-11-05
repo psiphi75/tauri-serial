@@ -62,6 +62,16 @@ fn serial_close(state: tauri::State<'_, SerialComms>) {
     }
 }
 
+fn to_array(s: &str) -> Vec<u8> {
+    let parts = s[1..s.len()-1].split(",");
+    let mut result = vec![];
+    for part in parts {
+        println!("part: {}", part);
+        result.push(part.parse().unwrap());
+    }
+    result
+}
+
 type SerialComms = Arc<Mutex<Option<Serial>>>;
 
 fn main() {
@@ -75,7 +85,9 @@ fn main() {
                 let serial_c = serial_comms2.lock().unwrap();
                 if let Some(serial) = &(*serial_c) {
                     if let Some(data) = event.payload() {
-                        let bytes = data.to_owned().as_bytes().to_vec();
+                        // let bytes = data.to_owned().as_bytes().to_vec();
+                        let bytes = to_array(data);
+                        println!("bytes: {:?} -> {:?}", bytes, data);
                         serial.write(bytes);
                     }
                 }
