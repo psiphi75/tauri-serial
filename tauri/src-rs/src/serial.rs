@@ -90,8 +90,11 @@ impl Serial {
             {
                 let recv_data = receiver.try_recv();
                 if let Ok(data) = recv_data {
-                    println!("{}:{} Wrote data", file!(), line!());
-                    serial.write(&data).expect("Unable to write to serial port");
+                    println!("{}:{} Writing data: {:?}", file!(), line!(), data);
+                    serial
+                        .write_all(&data)
+                        .expect("Unable to write to serial port");
+                    println!("{}:{} Done writing data", file!(), line!());
                 }
             }
 

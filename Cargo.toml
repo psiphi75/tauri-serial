@@ -1,4 +1,4 @@
 [workspace]
 
-members = ["tauri/src-rs"]
+members = ["tauri/src-rs", "tauri/serial-test"]
 resolver = "2"
