@@ -31,25 +31,29 @@ fn serial_open(
     msg: OpenSerialMsg,
     state: tauri::State<'_, SerialComms>,
 ) -> String {
-    println!("opening port: {}", msg.port);
+    println!("Opening '{}'", msg.port);
     // Make sure the port exists
     if !Serial::list_ports().contains(&msg.port) {
+        println!("Error: Port not found");
         return String::from("Port not found");
     }
 
     // Make sure the inner value is not yet set
     let mut inner_value = state.lock().unwrap();
     if (*inner_value).is_some() {
+        println!("Error: Port already open");
         // Serial port is running, don't open it again
         return String::from("Port already open");
     }
 
     let cb = Arc::new(Mutex::new(move |data: Vec<u8>| {
+        println!("Data read: {:?}", data);
         window.emit("serial-read", data).unwrap();
     }));
     let serial = Serial::open(&msg.port, msg.baud, msg.read_timout_ms as u64, cb);
     *inner_value = Some(serial);
 
+    println!("Opened '{}'", msg.port);
     String::from("Port opened")
 }
 
@@ -63,7 +67,7 @@ fn serial_close(state: tauri::State<'_, SerialComms>) {
 }
 
 fn to_array(s: &str) -> Vec<u8> {
-    let parts = s[1..s.len()-1].split(",");
+    let parts = s[1..s.len() - 1].split(',');
     let mut result = vec![];
     for part in parts {
         println!("part: {}", part);

@@ -5,5 +5,6 @@ To get running
 
 ```sh
 cd tauri
+npm install
 npm run tauri dev
 ```

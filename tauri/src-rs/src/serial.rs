@@ -1,8 +1,7 @@
-use std::io::Write;
 use std::sync::mpsc;
 use std::sync::{Arc, Mutex};
 
-use serial2::{self, SerialPort};
+use serial2::{self, SerialPort, Settings};
 
 pub type Callback = Arc<Mutex<dyn FnMut(Vec<u8>) + Send + Sync>>;
 
@@ -32,13 +31,33 @@ impl Serial {
 
     pub fn open(port: &str, baud: u32, read_timeout_ms: u64, read_cb: Callback) -> Self {
         // Open the port
-        let mut serial = SerialPort::open(port, baud).expect("Unable to open port");
+        println!(
+            "{}:{} Opening '{}', baud={}, timeout={}",
+            file!(),
+            line!(),
+            port,
+            baud,
+            read_timeout_ms
+        );
+        let mut serial = SerialPort::open(port, |mut settings: Settings| {
+            settings.set_raw();
+            settings.set_baud_rate(baud)?;
+            settings.set_char_size(serial2::CharSize::Bits8);
+            settings.set_stop_bits(serial2::StopBits::Two);
+            settings.set_parity(serial2::Parity::Odd);
+            settings.set_flow_control(serial2::FlowControl::RtsCts);
+            Ok(settings)
+        })
+        .expect("Unable to open port");
+        println!("{}:{} Port opened", file!(), line!());
+
         if read_timeout_ms > 0 {
             let timeout = std::time::Duration::from_millis(read_timeout_ms);
             serial
                 .set_read_timeout(timeout)
                 .expect("Unable to set read timeout");
         }
+        println!("{}:{} Timeout set", file!(), line!());
 
         let (sender, receiver) = mpsc::channel::<Vec<u8>>();
         let is_open: Mutex<bool> = true.into();
@@ -47,6 +66,7 @@ impl Serial {
 
         // Start the thread
         let mut buf = [0; 1024];
+        println!("{}:{} Spawning thread", file!(), line!());
         std::thread::spawn(move || loop {
             // Read data and send it back via the callback
             match serial.read(&mut buf) {
@@ -70,6 +90,7 @@ impl Serial {
             {
                 let recv_data = receiver.try_recv();
                 if let Ok(data) = recv_data {
+                    println!("{}:{} Wrote data", file!(), line!());
                     serial.write(&data).expect("Unable to write to serial port");
                 }
             }
@@ -78,6 +99,7 @@ impl Serial {
             {
                 let remain_open = is_open.lock().unwrap();
                 if !*remain_open {
+                    println!("{}:{} Done!", file!(), line!());
                     break;
                 }
             }
